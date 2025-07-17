@@ -1,0 +1,52 @@
+# === Python Bytecode ===
+__pycache__/
+*.py[cod]
+*.pyo
+
+# === Virtual Environment ===
+venv/
+env/
+.venv/
+
+# === Environment Variables ===
+.env
+.env.*
+
+# === Database Files ===
+*.sqlite3
+*.db
+*.sql
+
+# === Alembic ===
+alembic/versions/__pycache__/
+
+# === OS / Editor Junk ===
+.DS_Store
+.vscode/
+*.swp
+*.bak
+Thumbs.db
+
+# === Logs ===
+*.log
+
+# === Testing and Coverage ===
+htmlcov/
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+__coverage__/
+
+# === Mypy / Pylint / Ruff / Pyright ===
+.mypy_cache/
+.pyright/
+.pylint.d/
+
+# === Docker ===
+*.pid
+*.pid.lock
+
+# === Other ===
+*.tar.gz
+*.egg-info/
