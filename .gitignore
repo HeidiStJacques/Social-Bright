@@ -1,0 +1,23 @@
+# -----------------------
+# Frontend (Vite / Node)
+# -----------------------
+node_modules/
+dist/
+.env
+*.log
+
+# -----------------------
+# Backend (Python / FastAPI)
+# -----------------------
+__pycache__/
+*.py[cod]
+.env
+venv/
+
+# -----------------------
+# System / Editor junk
+# -----------------------
+.DS_Store
+.vscode/
+*.swp
+Thumbs.db
