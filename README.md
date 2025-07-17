@@ -1,6 +1,7 @@
-# SocialBright
+<img width="858" height="183" alt="Gradient Logo Zoom" src="https://github.com/user-attachments/assets/5ea61d76-2ec9-4748-a773-fd4474dcfe9f" />
 
-**SocialBright** is a HIPAA-compliant case management platform designed for social service providers, care coordinators, and human services teams. It supports client tracking, care planning, secure document uploads, eligibility reviews, and more — all in a user-friendly, multi-tenant environment.
+
+**Social Bright** is a HIPAA-compliant case management platform designed for social service providers, care coordinators, and human services teams. It supports client tracking, care planning, secure document uploads, eligibility reviews, and more — all in a user-friendly, multi-tenant environment.
 
 ---
 
@@ -25,40 +26,46 @@ To run it locally:
 ```bash
 cd socialbright-frontend
 npm install
-npm run dev
+npm run dev 
+```
 
-### **Backend (FastAPI + PostgreSQL)**
-cd socialbright-backend
+ ### **Backend (FastAPI + PostgreSQL)**
+```cd socialbright-backend
 # Set up `.env` file with credentials
 uvicorn app.main:app --reload
+```
 
-🛠️ Tech Stack
+ ### 🛠️ Tech Stack
 Frontend: React, Tailwind CSS
 Backend: FastAPI (Python)
 Database: PostgreSQL
 Other: Docker, Stripe, MinIO, GitHub Actions
 
-socialbright/
-├── socialbright-frontend/    # React frontend
-├── socialbright-backend/     # FastAPI backend
-├── docs/                     # System architecture & policies
+ ### socialbright/
+├── socialbright-frontend/    # React frontend  
+├── socialbright-backend/     # FastAPI backend  
+├── docs/                     # System architecture & policies  
 └── README.md
 
-🧑‍💼 Who It's For
-SocialBright is built for:
-Medicaid Waiver Programs
-Elder Services & Social Workers
-Care Management Agencies
-Multi-site Human Services Organizations
+## 🧑‍💼 Who It's For
+SocialBright is built for:  
+Medicaid Waiver Programs  
+Human Services & Social Workers  
+Care Management Agencies  
+Multi-site Human Services Organizations  
 
-⚖️ License
+## ⚖️ License
 This project is currently closed-source and does not have an open license.  
 Please contact the maintainer for permissions or access.
 
-🤝 Contributing
+## 🤝 Contributing
 We welcome contributions!
 
-📬 Contact
+## 📬 Contact
 For more info, contact info@socialbright.org or visit socialbright.org (coming soon).
+
+
+
+
 
 
