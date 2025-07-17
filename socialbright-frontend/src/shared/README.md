@@ -86,13 +86,13 @@ All exports should be named exports unless a layout or React component
 
 ## 🧩 Example Imports by Category
 
-@shared/components/Superuser/SuperuserCard
-@shared/context/AuthContext
-@shared/constants/dropdownOptions
-@shared/hooks/useLocalStorage
-@shared/layouts/AdminLayout
-@shared/routes/ProtectedRoute
-@shared/services/authService
-@shared/utils/dateUtils
+@shared/components/Superuser/SuperuserCard  
+@shared/context/AuthContext  
+@shared/constants/dropdownOptions  
+@shared/hooks/useLocalStorage  
+@shared/layouts/AdminLayout  
+@shared/routes/ProtectedRoute  
+@shared/services/authService  
+@shared/utils/dateUtils  
 
 
