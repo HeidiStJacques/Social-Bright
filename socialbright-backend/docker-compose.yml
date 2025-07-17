@@ -9,7 +9,7 @@ services:
       - "5433:5432"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: MollyElliot21!!!
+      POSTGRES_PASSWORD: postgrespassword
       POSTGRES_DB: socialbright
     volumes:
       - postgres-data:/var/lib/postgresql/data
