@@ -64,9 +64,9 @@ TenantWrapper is used globally to ensure tenant context is loaded before renderi
 
 ## 🔄 To Do
 
- Add route transition animations
- Add fallback loader while TenantWrapper is loading
- Add breadcrumbs to layouts
+ Add route transition animations  
+ Add fallback loader while TenantWrapper is loading  
+ Add breadcrumbs to layouts  
 
 ---
 
