@@ -43,6 +43,7 @@ import SuperuserCard from '@shared/components/Superuser/SuperuserCard';
 ---
 
 ## 🔍 Icons Used
+
 All icons are from lucide-react. Example icons include:
 🏢 Buildings — for tenants
 👤 UserCog — for superuser/admin users
@@ -59,6 +60,7 @@ Each component should receive only the necessary props to keep logic centralized
 ---
 
 ## 🔄 To Do
+
  Add loading skeletons for all table and card components
  Add tooltip support for icon-only buttons
  Add unit tests for Superuser components
@@ -66,6 +68,7 @@ Each component should receive only the necessary props to keep logic centralized
 ---
 
 ## 🧼 Naming Convention
+
 All filenames use PascalCase (e.g., SuperuserStatusBadge.jsx)
 All component names are prefixed with Superuser for clarity and namespacing.
 
