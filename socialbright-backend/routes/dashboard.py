@@ -6,15 +6,15 @@ from typing import List
 from db.session import get_db
 from db.models import CalendarEvent, Task, Alert, Client
 from schemas.dashboard import VisitResponse, TaskResponse, AlertResponse
-from dependencies.auth import get_current_user  # ✅ Real auth dependency
+from routes.auth import get_current_user  # ✅ Match what clients.py uses
 
 
-router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
+# ✅ Removed prefix here
+router = APIRouter(tags=["Dashboard"])
 
 # ✅ Real tenant logic
 def get_current_user_tenant_id(user = Depends(get_current_user)):
     return user.tenant_id
-
 
 @router.get("/visits", response_model=List[VisitResponse])
 def get_upcoming_visits(db: Session = Depends(get_db), tenant_id: int = Depends(get_current_user_tenant_id)):
@@ -40,7 +40,6 @@ def get_upcoming_visits(db: Session = Depends(get_db), tenant_id: int = Depends(
         for event, first, last in visits
     ]
 
-
 @router.get("/tasks", response_model=List[TaskResponse])
 def get_tasks(db: Session = Depends(get_db), tenant_id: int = Depends(get_current_user_tenant_id)):
     tasks = (
@@ -51,7 +50,6 @@ def get_tasks(db: Session = Depends(get_db), tenant_id: int = Depends(get_curren
         .all()
     )
     return tasks
-
 
 @router.get("/alerts", response_model=List[AlertResponse])
 def get_alerts(db: Session = Depends(get_db), tenant_id: int = Depends(get_current_user_tenant_id)):
