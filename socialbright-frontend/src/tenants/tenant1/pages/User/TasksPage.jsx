@@ -1,123 +1,108 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { format } from 'date-fns';
 
-const initialTasks = [
-  {
-    id: 1,
-    view: 'title',
-    title: 'Follow up with guardian',
-    description: 'Call to confirm medication schedule.',
-    dueDate: '2025-07-08',
-    status: 'To Do',
+const API_BASE = 'http://localhost:8000';
+
+const getAuthHeaders = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('token')}`,
   },
-  {
-    id: 2,
-    view: 'client',
-    clientName: 'Jane Doe',
-    task: 'Complete eligibility paperwork',
-    dueDate: '2025-07-10',
-    status: 'In Progress',
-    subtasks: [
-      { label: 'Print MEA form', checked: false },
-      { label: 'Upload income proof', checked: true },
-    ],
-  },
-];
+});
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState('All');
-  const [sortBy, setSortBy] = useState('dueDate');
-  const [newTaskType, setNewTaskType] = useState('title');
+  const [sortBy, setSortBy] = useState('due_date');
 
-  const toggleSubtask = (taskId, subIndex) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              subtasks: t.subtasks.map((s, i) =>
-                i === subIndex ? { ...s, checked: !s.checked } : s
-              ),
-            }
-          : t
-      )
-    );
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+  const clientId = localStorage.getItem('clientId');
+  if (!clientId) return;
+  try {
+    const res = await axios.get(`${API_BASE}/clients/${clientId}/tasks`, getAuthHeaders());
+    console.log("✅ tasks fetched:", res.data);
+    setTasks(res.data);
+  } catch (err) {
+    console.error('Error fetching tasks:', err);
+  }
+};
+
+  const addTask = async () => {
+    try {
+      const clientId = localStorage.getItem('clientId');
+      const newTask = {
+        view: 'client',
+        due_date: '',
+        status: 'To Do',
+        client_name: 'New Client',
+        task: 'New Task',
+        subtasks: [],
+      };
+      const res = await axios.post(`${API_BASE}/clients/${clientId}/tasks`, newTask, getAuthHeaders());
+      setTasks([...tasks, res.data]);
+    } catch (err) {
+      console.error('Error adding task:', err);
+    }
   };
 
-  const filteredTasks = tasks.filter((task) => {
-    return filter === 'All' || task.status === filter;
-  });
+  const updateTask = async (taskId, updatedFields) => {
+    try {
+      const clientId = localStorage.getItem('clientId');
+      const existing = tasks.find((t) => t.id === taskId);
+      const updatedTask = { ...existing, ...updatedFields };
+      const res = await axios.put(
+        `${API_BASE}/clients/${clientId}/tasks/${taskId}`,
+        updatedTask,
+        getAuthHeaders()
+      );
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? res.data : t)));
+    } catch (err) {
+      console.error('Error updating task:', err);
+    }
+  };
+
+  const deleteTask = async (taskId) => {
+    try {
+      const clientId = localStorage.getItem('clientId');
+      await axios.delete(`${API_BASE}/clients/${clientId}/tasks/${taskId}`, getAuthHeaders());
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    } catch (err) {
+      console.error('Error deleting task:', err);
+    }
+  };
+
+  const toggleSubtask = (taskId, subIndex) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || !task.subtasks) return;
+
+    const updatedSubtasks = task.subtasks.map((s, i) =>
+      i === subIndex ? { ...s, checked: !s.checked } : s
+    );
+    updateTask(taskId, { subtasks: updatedSubtasks });
+  };
+
+  const filteredTasks = tasks.filter(
+    (task) => filter === 'All' || task.status === filter
+  );
 
   const sortedTasks = filteredTasks.sort((a, b) => {
     if (sortBy === 'name') {
-      return (a.title || a.task || '').localeCompare(b.title || b.task || '');
-    } else {
-      return new Date(a.dueDate) - new Date(b.dueDate);
+      return (a.task || '').localeCompare(b.task || '');
     }
+    return new Date(a.due_date) - new Date(b.due_date);
   });
-
-  const handleDelete = (id) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
-  };
-
-  const addTask = () => {
-    const newId = Date.now();
-    const base = {
-      id: newId,
-      dueDate: '',
-      status: 'To Do',
-    };
-
-    if (newTaskType === 'title') {
-      setTasks([
-        ...tasks,
-        { ...base, view: 'title', title: 'New Task', description: '' },
-      ]);
-    } else {
-      setTasks([
-        ...tasks,
-        {
-          ...base,
-          view: 'client',
-          clientName: 'New Client',
-          task: 'New Client Task',
-          subtasks: [],
-        },
-      ]);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-16 text-black text-sm">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-xl font-bold mb-4 text-center">Tasks</h1>
+        <h1 className="text-xl font-bold mb-4 text-center">Client Tasks</h1>
 
         {/* Controls */}
-        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setNewTaskType('title')}
-              className={`px-3 py-1 text-sm rounded border ${
-                newTaskType === 'title'
-                  ? 'bg-[#007B94] text-white'
-                  : 'text-[#007B94] border-[#007B94] bg-white hover:bg-[#007B94]/10'
-              }`}
-            >
-              Title View
-            </button>
-            <button
-              onClick={() => setNewTaskType('client')}
-              className={`px-3 py-1 text-sm rounded border ${
-                newTaskType === 'client'
-                  ? 'bg-[#007B94] text-white'
-                  : 'text-[#007B94] border-[#007B94] bg-white hover:bg-[#007B94]/10'
-              }`}
-            >
-              Client View
-            </button>
-          </div>
-
+        <div className="flex justify-end mb-4">
           <button
             onClick={addTask}
             className="px-3 py-1 text-sm rounded bg-[#007B94] text-white hover:bg-[#00657a]"
@@ -144,7 +129,7 @@ export default function TasksPage() {
             onChange={(e) => setSortBy(e.target.value)}
             className="p-1 border rounded text-sm text-black"
           >
-            <option value="dueDate">Sort by Due Date</option>
+            <option value="due_date">Sort by Due Date</option>
             <option value="name">Sort by Name</option>
           </select>
         </div>
@@ -156,49 +141,34 @@ export default function TasksPage() {
               key={task.id}
               className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
             >
-              {task.view === 'title' ? (
-                <>
-                  <h2 className="text-sm font-semibold">{task.title}</h2>
-                  <p className="text-sm text-gray-800">{task.description}</p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-sm font-semibold">{task.clientName}</h2>
-                  <p className="text-sm text-gray-800 mb-2">{task.task}</p>
-                  <ul className="ml-4 list-disc space-y-1 text-sm text-gray-800">
-                    {task.subtasks?.map((sub, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={sub.checked}
-                          onChange={() => toggleSubtask(task.id, i)}
-                        />
-                        <span className={sub.checked ? 'line-through' : ''}>
-                          {sub.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
+              <h2 className="text-sm font-semibold">{task.client_name}</h2>
+              <p className="text-sm text-gray-800 mb-2">{task.task}</p>
+              <ul className="ml-4 list-disc space-y-1 text-sm text-gray-800">
+                {task.subtasks?.map((sub, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={sub.checked}
+                      onChange={() => toggleSubtask(task.id, i)}
+                    />
+                    <span className={sub.checked ? 'line-through' : ''}>
+                      {sub.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
               <div className="mt-2 flex flex-wrap items-center justify-between text-sm">
                 <div className="text-gray-700">
                   Due:{' '}
-                  {task.dueDate
-                    ? format(new Date(task.dueDate), 'MMM d, yyyy')
+                  {task.due_date
+                    ? format(new Date(task.due_date), 'MMM d, yyyy')
                     : '—'}
                 </div>
                 <div className="flex items-center gap-2">
                   <select
                     value={task.status}
-                    onChange={(e) =>
-                      setTasks((prev) =>
-                        prev.map((t) =>
-                          t.id === task.id ? { ...t, status: e.target.value } : t
-                        )
-                      )
-                    }
+                    onChange={(e) => updateTask(task.id, { status: e.target.value })}
                     className="border rounded p-1 text-sm text-black"
                   >
                     <option>To Do</option>
@@ -206,7 +176,7 @@ export default function TasksPage() {
                     <option>Done</option>
                   </select>
                   <button
-                    onClick={() => handleDelete(task.id)}
+                    onClick={() => deleteTask(task.id)}
                     className="text-red-500 hover:underline text-xs"
                   >
                     Delete
