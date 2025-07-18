@@ -1,20 +1,16 @@
 import React from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   FolderOpen,
   ClipboardList,
   FileBarChart2,
 } from 'lucide-react';
+import { useLogout } from '@shared/utils/logout';
 
 const AdminNavbar = () => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // TODO: Add real logout logic (e.g., clear token, call backend)
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
+  const logout = useLogout();
+  const location = useLocation();
 
   const linkClasses = ({ isActive }) =>
     `flex items-center gap-1 px-2 py-1.5 rounded text-sm font-medium transition ${
@@ -53,16 +49,14 @@ const AdminNavbar = () => {
       </nav>
 
       {/* Right: Logout button */}
-      {/* Right: Logout button */}
-<div className="w-full md:w-auto mt-2 md:mt-0 flex justify-end">
-  <button
-    onClick={handleLogout}
-    className="bg-[#007B94] text-white px-3 py-1 rounded-md hover:bg-[#005f70] transition text-sm font-medium"
-  >
-    Logout
-  </button>
-</div>
-
+      <div className="w-full md:w-auto mt-2 md:mt-0 flex justify-end">
+        <button
+          onClick={logout}
+          className="bg-[#007B94] text-white px-3 py-1 rounded-md hover:bg-[#005f70] transition text-sm font-medium"
+        >
+          Logout
+        </button>
+      </div>
     </header>
   );
 };

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Users, CheckSquare, BarChart2, Calendar } from 'lucide-react';
+import { useLogout } from '@shared/utils/logout';
 
 export default function DashboardNavbar() {
   const location = useLocation();
+  const logout = useLogout();
 
   return (
     <div className="fixed top-0 left-0 z-50 w-full h-14 bg-gray-100 border-b border-gray-300 px-4 sm:px-6 flex items-center justify-between text-xs sm:text-sm">
@@ -41,7 +43,7 @@ export default function DashboardNavbar() {
       <div className="flex items-center gap-2 sm:gap-3 text-black">
         <span className="hidden sm:inline font-medium">Welcome, Heidi</span>
         <button
-          onClick={() => alert('Logging out...')}
+          onClick={logout}
           className="bg-[#007B94] text-white text-xs px-2 sm:px-3 py-1 rounded hover:bg-[#00657a] transition"
         >
           Logout
