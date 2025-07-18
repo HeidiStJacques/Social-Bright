@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+# ✅ Visit schema for dashboard
 class VisitResponse(BaseModel):
     id: int
     client_id: int
@@ -15,11 +16,12 @@ class VisitResponse(BaseModel):
         "from_attributes": True,
     }
 
+# ✅ Task schema for dashboard
 class TaskResponse(BaseModel):
     id: int
     client_id: Optional[int] = None
     client_name: Optional[str] = "General"
-    title: str
+    task: Optional[str]
     due_date: datetime
     status: str
 
@@ -27,6 +29,7 @@ class TaskResponse(BaseModel):
         "from_attributes": True,
     }
 
+# ✅ Alert schema for dashboard
 class AlertResponse(BaseModel):
     id: int
     client_id: Optional[int]
