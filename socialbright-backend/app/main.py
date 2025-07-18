@@ -19,7 +19,7 @@ app = FastAPI()
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # your frontend
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,14 +34,15 @@ app.include_router(auth.router, prefix="/api/auth")
 app.include_router(admins.router)
 app.include_router(superuser.router)
 app.include_router(stripe.router)
-app.include_router(dashboard.router)
-#app.include_router(tenant_clients.router)
+# app.include_router(tenant_clients.router)
 app.include_router(calendar.router)
 app.include_router(router_general)
-app.include_router(clients.router)
+app.include_router(clients.router, prefix="/api/clients", tags=["clients"])
+app.include_router(dashboard.router, prefix="/api/dashboard")
 app.include_router(alerts.router, prefix="/api/dashboard")
 app.include_router(tasks.router, prefix="/api/dashboard")
 app.include_router(visits.router, prefix="/api/dashboard")
+
 
 
 # ---------- DEV / TEST ROUTES ----------
