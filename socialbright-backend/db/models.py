@@ -393,14 +393,20 @@ class Task(Base):
     __table_args__ = {'schema': 'clients'}
 
     id = Column(Integer, primary_key=True, index=True)
-    tenant_id = Column(Integer, nullable=False)  # 🔹 Add this line
-    user_id = Column(Integer, ForeignKey("users.users.id"))
-    client_id = Column(Integer, ForeignKey("clients.clients.id"))
-    title = Column(String)
-    description = Column(String)
+    tenant_id = Column(Integer, nullable=False)
+    client_id = Column(Integer, ForeignKey("clients.clients.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.users.id"), nullable=True)
+
+    view = Column(String)  # e.g., "client"
+    client_name = Column(String)
+    task = Column(String)
+    subtasks = Column(JSON, default=[])
     due_date = Column(DateTime)
-    status = Column(String)
-    created_at = Column(DateTime)
+    status = Column(String, default="To Do")
+
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
 
 # ========== ALERTS ===============
 
