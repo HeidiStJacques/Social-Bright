@@ -4,13 +4,27 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from db import models
 from db.session import engine
-from routes import users, auth, admins, superuser, stripe, tenant_clients, calendar, clients, dashboard
-from routes.calendar import router_general
-from api.dashboard import alerts, tasks, visits
 
-# Load environment variables
+# Route imports
+from routes import (
+    users,
+    auth,
+    admins,
+    superuser,
+    stripe,
+    calendar,
+    clients,
+    dashboard,
+    tasks  # client-specific task routes
+)
+from routes.calendar import router_general
+from api.dashboard import alerts, tasks as dashboard_tasks, visits  # dashboard-only tasks
+from api.clients import tasks as client_tasks
+
+# Load .env variables
 load_dotenv()
 
 # Initialize FastAPI app
@@ -25,24 +39,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create DB tables if they don't exist
+# Create tables if not already created
 models.Base.metadata.create_all(bind=engine)
 
-# ---------- ROUTER INCLUDES ----------
+# ---------- ROUTES ----------
+
+# Public / Auth
 app.include_router(users.router)
 app.include_router(auth.router, prefix="/api/auth")
+
+# Admin / Superuser
 app.include_router(admins.router)
 app.include_router(superuser.router)
+
+# Stripe Payment
 app.include_router(stripe.router)
-# app.include_router(tenant_clients.router)
+
+# Calendar
 app.include_router(calendar.router)
 app.include_router(router_general)
+
+# Clients
 app.include_router(clients.router, prefix="/api/clients", tags=["clients"])
+
+# Dashboard (metrics, reports)
 app.include_router(dashboard.router, prefix="/api/dashboard")
 app.include_router(alerts.router, prefix="/api/dashboard")
-app.include_router(tasks.router, prefix="/api/dashboard")
+app.include_router(dashboard_tasks.router, prefix="/api/dashboard")  # dashboard task metrics only
 app.include_router(visits.router, prefix="/api/dashboard")
 
+# Client-specific task routes
+app.include_router(client_tasks.router, prefix="/api", tags=["Tasks"])
 
 
 # ---------- DEV / TEST ROUTES ----------
