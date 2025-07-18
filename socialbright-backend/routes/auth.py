@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Security
+from fastapi import APIRouter, Depends, HTTPException, status, Security, Response
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -101,6 +101,12 @@ def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
 
     db.commit()
     return {"message": "Password reset successful"}
+
+# --------- Logout ---------------
+
+@router.post("/logout")
+def logout():
+    return {"message": "Logged out — clear token on frontend"}
 
 # ----------- Get DB --------------
 
