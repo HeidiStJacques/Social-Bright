@@ -409,10 +409,10 @@ class Alert(Base):
     __table_args__ = {'schema': 'clients'}
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, nullable=False)
     client_id = Column(Integer, ForeignKey("clients.clients.id"), nullable=True)
     message = Column(String, nullable=False)
     type = Column(String, nullable=False)  # e.g., "Urgent", "Warning", "Info"
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime)
-    
     client = relationship("Client", back_populates="alerts")
