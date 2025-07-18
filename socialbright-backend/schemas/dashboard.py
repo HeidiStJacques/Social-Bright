@@ -30,11 +30,11 @@ class TaskResponse(BaseModel):
 class AlertResponse(BaseModel):
     id: int
     client_id: Optional[int]
-    client_name: Optional[str]
     message: str
     type: str
-    date: datetime
-    is_active: bool
+    is_active: Optional[bool] = None
+    created_at: Optional[datetime] = None
+    tenant_id: int
 
     model_config = {
         "from_attributes": True,
