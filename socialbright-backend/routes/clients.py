@@ -1,18 +1,17 @@
-# app/routers/clients.py
+# app/routes/clients.py
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.session import get_db
-from routes.auth import get_current_user  # ✅ make sure this returns a User with tenant_id
+from routes.auth import get_current_user
 from db import models
 from crud import clients as crud_clients
 from crud import case_notes as crud_case_notes
 from schemas import clients as schemas
 from schemas import case_notes as schemas_case_notes
 
-router = APIRouter(prefix="/clients", tags=["Clients"])
+router = APIRouter(tags=["Clients"])  # ✅ FIXED: removed prefix
 
-
-# ✅ Get clients for current user's tenant
 @router.get("/", response_model=list[schemas.ClientResponse])
 def get_clients_for_tenant(
     db: Session = Depends(get_db),
@@ -20,8 +19,6 @@ def get_clients_for_tenant(
 ):
     return crud_clients.get_clients_by_tenant(db, current_user.tenant_id)
 
-
-# ✅ Create a new client (auto-assign tenant)
 @router.post("/", response_model=schemas.ClientResponse)
 def create_client(
     client_data: schemas.ClientCreate,
@@ -37,8 +34,6 @@ def create_client(
     db.refresh(client)
     return client
 
-
-# ✅ Add a case note for a client
 @router.post("/{client_id}/case-notes", response_model=schemas_case_notes.CaseNoteRead)
 def create_case_note_for_client(
     client_id: int,
@@ -47,8 +42,6 @@ def create_case_note_for_client(
 ):
     return crud_case_notes.create_case_note(db=db, note=note, client_id=client_id)
 
-
-# ✅ Get case notes for a client
 @router.get("/{client_id}/case-notes", response_model=list[schemas_case_notes.CaseNoteRead])
 def read_case_notes_for_client(
     client_id: int,
