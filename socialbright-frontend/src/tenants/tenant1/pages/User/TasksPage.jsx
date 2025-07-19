@@ -20,29 +20,25 @@ export default function TasksPage() {
   }, []);
 
   const fetchTasks = async () => {
-  const clientId = localStorage.getItem('clientId');
-  if (!clientId) return;
-  try {
-    const res = await axios.get(`${API_BASE}/clients/${clientId}/tasks`, getAuthHeaders());
-    console.log("✅ tasks fetched:", res.data);
-    setTasks(res.data);
-  } catch (err) {
-    console.error('Error fetching tasks:', err);
-  }
-};
+    try {
+      const res = await axios.get(`${API_BASE}/api/tasks`, getAuthHeaders());
+      console.log("✅ tasks fetched:", res.data);
+      setTasks(res.data);
+    } catch (err) {
+      console.error('Error fetching tasks:', err);
+    }
+  };
 
   const addTask = async () => {
     try {
-      const clientId = localStorage.getItem('clientId');
       const newTask = {
-        view: 'client',
-        due_date: '',
-        status: 'To Do',
-        client_name: 'New Client',
         task: 'New Task',
+        status: 'To Do',
+        due_date: '',
+        client_id: null,
         subtasks: [],
       };
-      const res = await axios.post(`${API_BASE}/clients/${clientId}/tasks`, newTask, getAuthHeaders());
+      const res = await axios.post(`${API_BASE}/api/tasks`, newTask, getAuthHeaders());
       setTasks([...tasks, res.data]);
     } catch (err) {
       console.error('Error adding task:', err);
@@ -51,14 +47,9 @@ export default function TasksPage() {
 
   const updateTask = async (taskId, updatedFields) => {
     try {
-      const clientId = localStorage.getItem('clientId');
       const existing = tasks.find((t) => t.id === taskId);
       const updatedTask = { ...existing, ...updatedFields };
-      const res = await axios.put(
-        `${API_BASE}/clients/${clientId}/tasks/${taskId}`,
-        updatedTask,
-        getAuthHeaders()
-      );
+      const res = await axios.put(`${API_BASE}/api/tasks/${taskId}`, updatedTask, getAuthHeaders());
       setTasks((prev) => prev.map((t) => (t.id === taskId ? res.data : t)));
     } catch (err) {
       console.error('Error updating task:', err);
@@ -67,8 +58,7 @@ export default function TasksPage() {
 
   const deleteTask = async (taskId) => {
     try {
-      const clientId = localStorage.getItem('clientId');
-      await axios.delete(`${API_BASE}/clients/${clientId}/tasks/${taskId}`, getAuthHeaders());
+      await axios.delete(`${API_BASE}/api/tasks/${taskId}`, getAuthHeaders());
       setTasks((prev) => prev.filter((task) => task.id !== taskId));
     } catch (err) {
       console.error('Error deleting task:', err);
@@ -97,7 +87,7 @@ export default function TasksPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-16 text-black text-sm">
+    <div className="min-h-screen bg-gray-100 px-4 py-16 text-black text-sm">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-xl font-bold mb-4 text-center">Client Tasks</h1>
 
@@ -141,7 +131,7 @@ export default function TasksPage() {
               key={task.id}
               className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
             >
-              <h2 className="text-sm font-semibold">{task.client_name}</h2>
+              <h2 className="text-sm font-semibold">{task.client_name || 'General'}</h2>
               <p className="text-sm text-gray-800 mb-2">{task.task}</p>
               <ul className="ml-4 list-disc space-y-1 text-sm text-gray-800">
                 {task.subtasks?.map((sub, i) => (
