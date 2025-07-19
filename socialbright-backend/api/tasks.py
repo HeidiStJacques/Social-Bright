@@ -84,4 +84,38 @@ def get_all_tasks_for_tenant(
             subtasks=task.subtasks or []
         )
         for (task, first, last) in tasks
-    ]
+ ]
+
+@router.post("/tasks", response_model=TaskResponse)
+def create_task_for_tenant(
+    task: TaskCreate,
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user)
+):
+    new_task = Task(
+    client_id=task.client_id,
+    tenant_id=user.tenant_id,
+    user_id=user.id,
+    task=task.task,
+    status=task.status,
+    due_date=task.due_date,
+    subtasks=task.subtasks or [],
+    view='client',
+    client_name=''  # added!
+)
+
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+    return TaskResponse(
+        id=new_task.id,
+        client_id=new_task.client_id,
+        client_name="",
+        task=new_task.task,
+        due_date=new_task.due_date,
+        status=new_task.status,
+        view=new_task.view,
+        subtasks=new_task.subtasks or []
+    )
+   
+
