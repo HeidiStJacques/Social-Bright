@@ -1,5 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 from datetime import datetime
+
 
 class VisitResponse(BaseModel):
     id: int
@@ -11,7 +13,7 @@ class VisitResponse(BaseModel):
     end_time: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class TaskResponse(BaseModel):
     id: int
@@ -22,7 +24,7 @@ class TaskResponse(BaseModel):
     status: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class AlertResponse(BaseModel):
     id: int
@@ -34,4 +36,17 @@ class AlertResponse(BaseModel):
     is_active: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class User(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    is_active: bool
+    role: str
+    tenant_id: int
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True

@@ -1,5 +1,4 @@
-// src/pages/ReportsPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ReportsPage() {
   const [filters, setFilters] = useState({
@@ -9,23 +8,110 @@ export default function ReportsPage() {
     endDate: '',
   });
 
-  const clients = ['Jane Doe', 'John Smith', 'Maria Rivera'];
-  const statuses = ['To Do', 'In Progress', 'Done'];
+  const [reportType, setReportType] = useState("client-summary");
+  const [allClients, setAllClients] = useState([]);
+  const [planOfCareData, setPlanOfCareData] = useState([]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('http://localhost:8000/api/clients/', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setAllClients(data);
+      } catch (err) {
+        console.error('Failed to load clients', err);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  useEffect(() => {
+    if (reportType === "plan-of-care-status") {
+      const fetchPlanStatus = async () => {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:8000/api/reports/plan-of-care-status", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setPlanOfCareData(data);
+      };
+      fetchPlanStatus();
+    }
+  }, [reportType]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const exportCSV = () => alert('CSV export coming soon.');
-  const exportPDF = () => alert('PDF export coming soon.');
+  const exportCSV = async () => {
+    const token = localStorage.getItem('token');
 
-  const allClients = [
-    { name: 'Jane Doe', dob: '01/01/1990', status: 'Active', city: 'Manchester', lastContact: '07/02/2025' },
-    { name: 'John Smith', dob: '03/12/1982', status: 'Discharged', city: 'Concord', lastContact: '06/15/2025' },
-    { name: 'Maria Rivera', dob: '09/10/1975', status: 'Medical Suspension', city: 'Nashua', lastContact: '06/30/2025' },
-    { name: 'Eva Li', dob: '12/18/1995', status: 'Active', city: 'Manchester', lastContact: '07/03/2025' },
-  ];
+    if (reportType === "eligibility-status") {
+      window.open("http://localhost:8000/api/reports/eligibility-status/export", "_blank");
+      return;
+    }
+
+    if (reportType === "plan-of-care-status") {
+      window.open("http://localhost:8000/api/reports/plan-of-care-status/export", "_blank");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      report_type: reportType,
+      format: 'csv',
+    });
+
+    if (filters.client) params.append('client_id', filters.client);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.startDate) params.append('start_date', filters.startDate);
+    if (filters.endDate) params.append('end_date', filters.endDate);
+
+    const url = `http://localhost:8000/api/reports/export?${params.toString()}`;
+
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `${reportType}.csv`;
+      link.click();
+    } catch (err) {
+      alert('Failed to export CSV.');
+      console.error(err);
+    }
+  };
+
+  const exportPDF = async () => {
+    const token = localStorage.getItem('token');
+    const url = `http://localhost:8000/api/reports/export-pdf?report_type=${reportType}`;
+
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `${reportType}.pdf`;
+      link.click();
+    } catch (err) {
+      alert('Failed to export PDF.');
+      console.error(err);
+    }
+  };
 
   const activeClients = allClients.filter(
     (c) => !['Discharged', 'Medical Suspension', 'Social Suspension'].includes(c.status)
@@ -36,8 +122,9 @@ export default function ReportsPage() {
   );
 
   const cityGroups = activeClients.reduce((acc, client) => {
-    if (!acc[client.city]) acc[client.city] = [];
-    acc[client.city].push(client.name);
+    const city = client.city || 'Unknown';
+    if (!acc[city]) acc[city] = [];
+    acc[city].push(`${client.first_name} ${client.last_name}`);
     return acc;
   }, {});
 
@@ -55,48 +142,30 @@ export default function ReportsPage() {
         {/* Filters */}
         <div className="bg-white p-3 rounded-lg shadow-sm mb-6 text-sm">
           <div className="grid md:grid-cols-4 gap-3">
-            <select
-              name="client"
-              value={filters.client}
-              onChange={handleFilterChange}
-              className="p-1 border rounded-md"
-            >
+            <select name="client" value={filters.client} onChange={handleFilterChange} className="p-1 border rounded-md">
               <option value="">All Clients</option>
-              {clients.map((client) => (
-                <option key={client}>{client}</option>
+              {allClients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.first_name} {client.last_name}
+                </option>
               ))}
             </select>
-
-            <select
-              name="status"
-              value={filters.status}
-              onChange={handleFilterChange}
-              className="p-1 border rounded-md"
-            >
+            <select name="status" value={filters.status} onChange={handleFilterChange} className="p-1 border rounded-md">
               <option value="">All Statuses</option>
-              {statuses.map((status) => (
-                <option key={status}>{status}</option>
-              ))}
+              <option>To Do</option>
+              <option>In Progress</option>
+              <option>Done</option>
+              <option>Active</option>
+              <option>Discharged</option>
+              <option>Medical Suspension</option>
+              <option>Social Suspension</option>
             </select>
-
-            <input
-              type="date"
-              name="startDate"
-              value={filters.startDate}
-              onChange={handleFilterChange}
-              className="p-1 border rounded-md"
-            />
-            <input
-              type="date"
-              name="endDate"
-              value={filters.endDate}
-              onChange={handleFilterChange}
-              className="p-1 border rounded-md"
-            />
+            <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="p-1 border rounded-md" />
+            <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="p-1 border rounded-md" />
           </div>
         </div>
 
-        {/* Dashboard Metrics */}
+        {/* Metrics */}
         <div className="grid md:grid-cols-3 gap-4 mb-8 text-sm">
           <MetricCard label="Total Active Clients" value={activeClients.length} />
           <MetricCard label="Completed Plans of Care" value={18} />
@@ -105,87 +174,35 @@ export default function ReportsPage() {
 
         {/* Reports */}
         <ReportSection
-          title="Client Summary Report"
-          headers={['Client Name', 'DOB', 'Status']}
-          rows={activeClients.map((c) => [c.name, c.dob, c.status])}
-        />
-
-        <ReportSection
-          title="Demographic Breakdown"
-          headers={['Category', 'Count']}
-          rows={[
-            ['Female', 18],
-            ['Male', 14],
-            ['Hispanic', 9],
-            ['White', 13],
-          ]}
-        />
-
-        <ReportSection
-          title="Eligibility Status Report"
-          headers={['Client', 'Eligible?', 'MEA Date']}
-          rows={[
-            ['Jane Doe', 'Yes', '06/30/2025'],
-            ['Eva Li', 'Yes', '07/01/2025'],
-          ]}
-        />
-
-        <ReportSection
-          title="Plan of Care Completion"
-          headers={['Client', 'Completed?', 'Last Updated']}
-          rows={[
-            ['Jane Doe', 'Yes', '07/01/2025'],
-            ['Eva Li', 'No', '07/03/2025'],
-          ]}
-        />
-
-        <ReportSection
-          title="Tasks Completed by Date Range"
-          headers={['Client', 'Task', 'Completed On']}
-          rows={[
-            ['Jane Doe', 'Upload MEA', '07/02/2025'],
-            ['Eva Li', 'Review Demographics', '07/03/2025'],
-          ]}
-        />
-
-        <ReportSection
-          title="Missing Documents / Alerts"
-          headers={['Client', 'Missing', 'Urgency']}
-          rows={[
-            ['Eva Li', 'Consent Form', 'High'],
-          ]}
-        />
-
-        <ReportSection
           title="Clients by City"
           headers={['City', 'Total Clients', 'Client Names']}
-          rows={clientsByCity.map((entry) => [
-            entry.city,
-            entry.count,
-            entry.clients.join(', '),
-          ])}
+          rows={clientsByCity.map((entry) => [entry.city, entry.count, entry.clients.join(', ')])}
         />
-
         <ReportSection
           title="Archived & Suspended Clients"
-          headers={['Client', 'Status', 'Last Contact']}
-          rows={suspendedClients.map((c) => [c.name, c.status, c.lastContact])}
+          headers={['Client', 'Status']}
+          rows={suspendedClients.map((c) => [`${c.first_name} ${c.last_name}`, c.status])}
         />
+        {reportType === "plan-of-care-status" && (
+          <ReportSection
+            title="Plan of Care Completion Status"
+            headers={["Client", "Last Plan Date", "Status"]}
+            rows={planOfCareData.map((r) => [r.name, r.last_plan_date, r.status])}
+          />
+        )}
 
-        {/* Export Buttons */}
-        <div className="flex justify-center gap-3 mt-10">
-          <button
-            onClick={exportCSV}
-            className="bg-[#007B94] text-white px-4 py-1.5 rounded-md shadow-sm hover:bg-[#00657a] transition text-sm"
-          >
-            Export CSV
-          </button>
-          <button
-            onClick={exportPDF}
-            className="bg-[#007B94] text-white px-4 py-1.5 rounded-md shadow-sm hover:bg-[#00657a] transition text-sm"
-          >
-            Export PDF
-          </button>
+        {/* Export Controls */}
+        <div className="flex flex-col md:flex-row justify-center gap-3 items-center mt-10 text-sm">
+          <select value={reportType} onChange={(e) => setReportType(e.target.value)} className="border px-2 py-1 rounded-md">
+            <option value="client-summary">Client Summary</option>
+            <option value="demographics">Demographics</option>
+            <option value="eligibility-status">Eligibility Status</option>
+            <option value="plan-of-care-status">Plan of Care Completion Status</option>
+            <option value="tasks-completed">Tasks Completed</option>
+            <option value="missing-documents">Missing Documents</option>
+          </select>
+          <button onClick={exportCSV} className="bg-[#007B94] text-white px-4 py-1.5 rounded-md shadow-sm hover:bg-[#00657a] transition">Export CSV</button>
+          <button onClick={exportPDF} className="bg-[#007B94] text-white px-4 py-1.5 rounded-md shadow-sm hover:bg-[#00657a] transition">Export PDF</button>
         </div>
       </div>
     </div>
@@ -208,24 +225,15 @@ function ReportSection({ title, headers, rows }) {
       <div className="overflow-x-auto rounded-md shadow-sm">
         <table className="min-w-full bg-white border text-xs">
           <thead className="bg-[#007B94] text-white">
-            <tr>
-              {headers.map((header, i) => (
-                <th
-                  key={i}
-                  className="text-left font-medium px-3 py-1 border-b"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
+            <tr>{headers.map((header, i) => (
+              <th key={i} className="text-left font-medium px-3 py-1 border-b">{header}</th>
+            ))}</tr>
           </thead>
           <tbody>
             {rows.map((row, ri) => (
               <tr key={ri} className="hover:bg-gray-50">
                 {row.map((col, ci) => (
-                  <td key={ci} className="px-3 py-1 border-b whitespace-nowrap">
-                    {col}
-                  </td>
+                  <td key={ci} className="px-3 py-1 border-b whitespace-nowrap">{col}</td>
                 ))}
               </tr>
             ))}
