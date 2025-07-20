@@ -57,7 +57,7 @@ If you're testing or reviewing anything from this folder, feel free to leave com
 
 ## 📸 Screenshots
 
-<img width="1910" height="910" alt="Screenshot 2025-07-20 095536" src="https://github.com/user-attachments/assets/a7befa62-bcca-4556-bfc4-1fe3c2d49e9a" />
+Coming soon!
 
 
 ---
