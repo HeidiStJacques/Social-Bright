@@ -29,7 +29,7 @@ npm install
 npm run dev 
 ```
 
- ### **Backend (FastAPI + PostgreSQL)**
+ ### **Backend (Django + PostgreSQL)**
 ```cd socialbright-backend
 # Set up `.env` file with credentials
 uvicorn app.main:app --reload
@@ -37,13 +37,13 @@ uvicorn app.main:app --reload
 
  ### 🛠️ Tech Stack
 Frontend: React, Tailwind CSS
-Backend: FastAPI (Python)
+Backend: Django (Python)
 Database: PostgreSQL
 Other: Docker, Stripe, MinIO, GitHub Actions
 
  ### socialbright/
 ├── socialbright-frontend/    # React frontend  
-├── socialbright-backend/     # FastAPI backend  
+├── socialbright-backend/     # Django backend  
 ├── docs/                     # System architecture & policies  
 └── README.md
 
